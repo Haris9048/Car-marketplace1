@@ -52,6 +52,10 @@ const protect = (req, res, next) => {
   }
 };
 
+app.get("/", (req, res) => {
+  res.send("Backend running");
+});
+
 
 app.post("/signup", async (req, res) => {
 
