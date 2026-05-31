@@ -8,55 +8,66 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 
-
 app.use(cors());
 app.use(express.json());
-
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
-
+// User Model
 const User = mongoose.model("User", {
   name: String,
   email: { type: String, unique: true },
   password: String
 });
 
-
+// Car Model
 const Car = mongoose.model("Car", {
   title: String,
   price: Number,
   description: String,
+  brand: String,
+  model: String,
+  year: Number,
+  fuelType: String,
+  imageUrl: String,
   userId: String
 });
 
-
+// JWT Middleware
 const protect = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Not authorized" });
+    return res.status(401).json({
+      message: "Not authorized"
+    });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
     req.user = decoded;
 
     next();
 
   } catch {
-    res.status(401).json({ message: "Invalid token" });
+    res.status(401).json({
+      message: "Invalid token"
+    });
   }
 };
 
+// Health Check
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
 
-
+// Signup
 app.post("/signup", async (req, res) => {
 
   try {
@@ -71,7 +82,8 @@ app.post("/signup", async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
 
     await User.create({
       name,
@@ -95,7 +107,7 @@ app.post("/signup", async (req, res) => {
 
 });
 
-
+// Login
 app.post("/login", async (req, res) => {
 
   try {
@@ -148,7 +160,7 @@ app.post("/login", async (req, res) => {
 
 });
 
-// ➕ Add Car (Protected)
+// Add Car
 app.post("/cars", protect, async (req, res) => {
 
   try {
@@ -172,7 +184,7 @@ app.post("/cars", protect, async (req, res) => {
 
 });
 
-
+// Get All Cars
 app.get("/cars", async (req, res) => {
 
   try {
@@ -193,7 +205,7 @@ app.get("/cars", async (req, res) => {
 
 });
 
-
+// Get Single Car
 app.get("/cars/:id", async (req, res) => {
 
   try {
@@ -220,7 +232,7 @@ app.get("/cars/:id", async (req, res) => {
 
 });
 
-
+// Delete Car
 app.delete("/cars/:id", protect, async (req, res) => {
 
   try {
@@ -233,7 +245,6 @@ app.delete("/cars/:id", protect, async (req, res) => {
       });
     }
 
-    // ✅ Owner Check
     if (car.userId !== req.user.id) {
       return res.status(403).json({
         message: "Not allowed"
@@ -257,7 +268,6 @@ app.delete("/cars/:id", protect, async (req, res) => {
   }
 
 });
-
 
 const PORT = process.env.PORT || 5000;
 
