@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const cloudinary = require("./utils/cloudinary");
 
 const app = express();
 
@@ -33,6 +35,10 @@ const Car = mongoose.model("Car", {
   fuelType: String,
   imageUrl: String,
   userId: String
+});
+
+const upload = multer({
+  storage: multer.memoryStorage()
 });
 
 // JWT Middleware
@@ -270,6 +276,30 @@ app.delete("/cars/:id", protect, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+app.post("/upload", upload.single("image"), async (req, res) => {
+
+  try {
+
+    const result = await cloudinary.uploader.upload(
+      `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+    );
+
+    res.json({
+      imageUrl: result.secure_url
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      message: "Upload failed"
+    });
+
+  }
+
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
