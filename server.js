@@ -80,6 +80,38 @@ app.post("/signup", async (req, res) => {
 
     const { name, email, password } = req.body;
 
+    if (!name || name.trim()==''){
+      return res.status(400).json({
+        message : "Name is required"
+      })
+    }
+
+    if (!email || email.trim() === "") {
+  return res.status(400).json({
+    message: "Email is required"
+  });
+}
+
+if (!email.includes("@")) {
+  return res.status(400).json({
+    message: "Invalid email"
+  });
+}
+
+// Password validation
+if (!password) {
+  return res.status(400).json({
+    message: "Password is required"
+  });
+}
+
+if (password.length < 8) {
+  return res.status(400).json({
+    message: "Password must be at least 8 characters"
+  });
+}
+
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -118,7 +150,27 @@ app.post("/login", async (req, res) => {
 
   try {
 
+
+
     const { email, password } = req.body;
+
+    if (!email || email.trim() === "") {
+  return res.status(400).json({
+    message: "Email is required"
+  });
+}
+
+if (!password) {
+  return res.status(400).json({
+    message: "Password is required"
+  });
+}
+
+if (!email.includes("@")) {
+  return res.status(400).json({
+    message: "Invalid email"
+  });
+}
 
     const user = await User.findOne({ email });
 
