@@ -92,7 +92,10 @@ app.post("/signup", async (req, res) => {
   });
 }
 
-if (!email.includes("@")) {
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailRegex.test(email)) {
   return res.status(400).json({
     message: "Invalid email"
   });
@@ -105,12 +108,15 @@ if (!password) {
   });
 }
 
-if (password.length < 8) {
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+if (!passwordRegex.test(password)) {
   return res.status(400).json({
-    message: "Password must be at least 8 characters"
+    message:
+      "Password must contain uppercase, lowercase, number and be at least 8 characters"
   });
 }
-
 
     const existingUser = await User.findOne({ email });
 
@@ -166,16 +172,18 @@ if (!password) {
   });
 }
 
-if (!email.includes("@")) {
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailRegex.test(email)) {
   return res.status(400).json({
     message: "Invalid email"
   });
 }
-
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({
+      return res.status(401).json({
         message: "Invalid credentials"
       });
     }
@@ -186,7 +194,7 @@ if (!email.includes("@")) {
     );
 
     if (!isMatch) {
-      return res.status(400).json({
+      return res.status(401).json({
         message: "Invalid credentials"
       });
     }
@@ -220,6 +228,18 @@ if (!email.includes("@")) {
 
 // Add Car
 app.post("/cars", protect, async (req, res) => {
+
+  if (!req.body.title) {
+  return res.status(400).json({
+    message: "Title is required"
+  });
+}
+
+if (!req.body.price || req.body.price <= 0) {
+  return res.status(400).json({
+    message: "Valid price is required"
+  });
+}
 
   try {
 
@@ -330,6 +350,12 @@ app.delete("/cars/:id", protect, async (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.post("/upload", upload.single("image"), async (req, res) => {
+
+  if (!req.file) {
+  return res.status(400).json({
+    message: "Image is required"
+  });
+}
 
   try {
 
